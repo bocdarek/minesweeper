@@ -4,20 +4,26 @@ import java.util.Scanner;
 
 public class Main {
 
+    private static final Scanner sc = CommonScanner.getInstance();
+
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
-        System.out.print("How many mines do you want on the field? ");
         int minesNumber = 0;
-        try {
-            minesNumber = Integer.parseInt(sc.nextLine().trim());
-        } catch (NumberFormatException e) {
-            System.out.println("Error! It's not a number.");
-            return;
+        while (true) {
+            System.out.print("How many mines do you want on the field? ");
+            String input = sc.nextLine().trim();
+            if (input.matches("^[1-9][0-9]?$")) {
+                minesNumber = Integer.parseInt(input);
+                break;
+            } else {
+                System.out.println("You must enter the number between.\n");
+            }
         }
 
-        Board board = new Board();
-        board.generateMines(minesNumber);
-        board.display();
+        Game game = new Game(minesNumber);
+        game.play();
+
+
+
     }
 }

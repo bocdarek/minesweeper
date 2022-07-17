@@ -4,12 +4,31 @@ import java.util.*;
 
 public class Board {
 
-    private final int DIM = 9;
-    private final Field[][] board = new Field[DIM][DIM];
+    private final int boardSize;
+    private Field[][] board;
     private final List<Field> availableFields = new ArrayList<>();
     private final Set<Field> mines = new HashSet<>();
+    private Player player;
 
-    public Board() {
+    public Board(int boardSize) {
+        this.boardSize = boardSize;
+        createBoard();
+    }
+
+    public Set<Field> getMines() {
+        return mines;
+    }
+
+    public Field[][] getBoard() {
+        return board;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    private void createBoard() {
+        board = new Field[boardSize][boardSize];
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 Field field = new Field(j, i, ".", false);
@@ -31,12 +50,46 @@ public class Board {
     }
 
     public void display() {
-        for (Field[] row : board) {
-            for (Field field : row) {
-                System.out.print(field.getSymbol());
+        printTop();
+        for (int i = 0; i < board.length; i++) {
+            System.out.print((i + 1) + "|");
+            for (int j = 0; j <board[i].length; j++) {
+                Field field = board[i][j];
+                if (player.getVisitedFields().contains(field)) {
+                    System.out.print("*");
+                    continue;
+                }
+                String fieldSymbol = field.getSymbol();
+                System.out.print("X".equals(fieldSymbol) ? "." : fieldSymbol);
             }
-            System.out.println();
+            System.out.println("|");
         }
+        printBottom();
+    }
+
+    public void displayWithMines() {
+        printTop();
+        for (int i = 0; i < board.length; i++) {
+            System.out.print((i + 1) + "|");
+            for (int j = 0; j <board[i].length; j++) {
+                System.out.print(board[i][j].getSymbol());
+            }
+            System.out.println("|");
+        }
+        printBottom();
+    }
+
+    private void printTop() {
+        System.out.print("\n |");
+        for (int i = 1; i <= boardSize; i++) {
+            System.out.print(i);
+        }
+        System.out.println("|");
+        printBottom();
+    }
+
+    private void printBottom() {
+        System.out.println("-|" + "-".repeat(boardSize) + "|");
     }
 
 
