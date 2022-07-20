@@ -15,6 +15,10 @@ public class Board {
         createBoard();
     }
 
+    public List<Field> getAvailableFields() {
+        return availableFields;
+    }
+
     public Set<Field> getMines() {
         return mines;
     }
@@ -46,37 +50,53 @@ public class Board {
             chosenField.setMine(true);
             mines.add(chosenField);
         }
-        addAllHints();
     }
 
     public void display() {
+        display(false);
+    }
+
+    public void display(boolean withMines) {
         printTop();
         for (int i = 0; i < board.length; i++) {
             System.out.print((i + 1) + "|");
             for (int j = 0; j <board[i].length; j++) {
                 Field field = board[i][j];
-                if (player.getVisitedFields().contains(field)) {
+                if (withMines && mines.contains(field)) {
+                    System.out.print("X");
+                    continue;
+                }
+                if (player.getMarkedFields().contains(field)) {
                     System.out.print("*");
                     continue;
                 }
                 String fieldSymbol = field.getSymbol();
-                System.out.print("X".equals(fieldSymbol) ? "." : fieldSymbol);
+                if (player.getExploredFields().contains(field)) {
+                    System.out.print(".".equals(fieldSymbol) ? "/" : fieldSymbol);
+                    continue;
+                }
+                System.out.print(".");
             }
             System.out.println("|");
         }
         printBottom();
     }
 
-    public void displayWithMines() {
-        printTop();
-        for (int i = 0; i < board.length; i++) {
-            System.out.print((i + 1) + "|");
-            for (int j = 0; j <board[i].length; j++) {
-                System.out.print(board[i][j].getSymbol());
-            }
-            System.out.println("|");
+    public void explore(Field field) {
+        if (!availableFields.contains(field)) {
+            return;
         }
-        printBottom();
+        player.getMarkedFields().remove(field); // just in case we chose previously marked field
+
+        availableFields.remove(field);
+        player.getExploredFields().add(field);
+        if (field.getSymbol().equals(".")) {
+            for (Field adjacentField : field.getAdjacentFields()) {
+                if (!player.getExploredFields().contains(adjacentField)) {
+                    explore(adjacentField);
+                }
+            }
+        }
     }
 
     private void printTop() {
@@ -116,7 +136,7 @@ public class Board {
         field.setAdjacentFields(adjacentFields);
     }
 
-    private void addAllHints() {
+    public void addAllHints() {
         for (Field field : availableFields) {
             field.addHint();
         }

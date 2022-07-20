@@ -16,7 +16,7 @@ public class Main {
                 minesNumber = Integer.parseInt(input);
                 break;
             } else {
-                System.out.println("You must enter the number between.\n");
+                System.out.println("You must enter a number.\n");
             }
         }
 

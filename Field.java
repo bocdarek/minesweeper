@@ -69,6 +69,4 @@ public class Field {
             symbol = String.valueOf(mineCounter);
         }
     }
-
-
 }

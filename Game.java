@@ -1,6 +1,5 @@
 package minesweeper;
 
-import java.awt.*;
 import java.util.Scanner;
 
 public class Game {
@@ -12,6 +11,10 @@ public class Game {
     private final Board board = new Board(boardSize);
     private final Player player = new Player();
 
+    private final int WRONG_INPUT = -1;
+    private final int FREE = 0;
+    private final int MINE = 1;
+
     {
         board.setPlayer(player);
     }
@@ -21,47 +24,74 @@ public class Game {
     }
 
     public void play() {
-        board.generateMines(numberOfMines);
+        boolean isFirstExploration = true;
         board.display();
-        while (!player.getVisitedFields().equals(board.getMines())) {
-            System.out.print("Set/delete mines marks (x and y coordinates): ");
-            boolean areCoordinatesValid = takeCoordinates();
-            if (!areCoordinatesValid) {
+        while (!player.getMarkedFields().equals(board.getMines())
+                || board.getAvailableFields().isEmpty() || isFirstExploration) {
+            System.out.print("Set/unset mines marks or claim a cell as free: ");
+            int[] userInput = takeCommand();
+            if (userInput[2] == WRONG_INPUT) {
                 continue;
             }
+
+            int x = userInput[0];
+            int y = userInput[1];
+            Field field = board.getBoard()[y][x];
+
+            if (userInput[2] == FREE) {
+                if (isFirstExploration) {
+                    board.getAvailableFields().remove(field);
+                    board.generateMines(numberOfMines);
+                    board.getAvailableFields().add(field);
+                    board.addAllHints();
+                    isFirstExploration = false;
+                }
+                if (board.getMines().contains(field)) {
+                    board.display(true);
+                    System.out.println("You stepped on a mine and failed!");
+                    return;
+                } else if (board.getAvailableFields().contains(field)) {
+                    board.explore(field);
+                }
+            }
+
+            if (userInput[2] == MINE && !player.getExploredFields().contains(field)) {
+                player.updateMarkedFields(field);
+            }
+
             board.display();
         }
         System.out.println("Congratulations! You found all mines!");
     }
 
-    private boolean takeCoordinates() {
-        String[] coordinates = sc.nextLine().trim().split("\\s+");
-        if (coordinates.length != 2 || !coordinates[0].matches("^[1-9]$")
+    private int[] takeCommand() {
+        int[] userInput = new int[3];
+        String[] coordinates = sc.nextLine().trim().toLowerCase().split("\\s+");
+        if (coordinates.length < 2 || !coordinates[0].matches("^[1-9]$")
                                     || !coordinates[1].matches("^[1-9]$")) {
-            System.out.println("You need provide two digits separated by space!");
-            return false;
+            System.out.println("You need provide two digits separated by space and command!");
+            userInput[2] = WRONG_INPUT;
+            return userInput;
         }
 
-        for (String coordinate: coordinates) {
-            if (Integer.parseInt(coordinate) > boardSize) {
+        for (int i = 0; i < 2; i++) {
+            if (Integer.parseInt(coordinates[i]) > boardSize) {
                 System.out.printf("Each coordinate cannot be bigger than %s%n.", boardSize);
-                return false;
+                userInput[2] = WRONG_INPUT;
+                return userInput;
             }
         }
 
-        int x = Integer.parseInt(coordinates[0]) - 1;
-        int y = Integer.parseInt(coordinates[1]) - 1;
-        Field field = board.getBoard()[y][x];
-        if (!"X.".contains(field.getSymbol())) {
-            System.out.println("There is a number here!");
-            return false;
+        if (coordinates.length >= 3 && coordinates[2].matches("(^free$)|(^mine$)")) {
+            userInput[2] = coordinates[2].matches("free") ? FREE : MINE;
+        } else {
+            System.out.println("Possible commands are \"free\" and \"mine\".");
+            userInput[2] = WRONG_INPUT;
+            return userInput;
         }
 
-        if (!player.getVisitedFields().contains(field)) {
-            player.getVisitedFields().add(field);
-        } else {
-            player.getVisitedFields().remove(field);
-        }
-        return true;
+        userInput[0] = Integer.parseInt(coordinates[0]) - 1;
+        userInput[1] = Integer.parseInt(coordinates[1]) - 1;
+        return userInput;
     }
 }

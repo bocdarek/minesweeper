@@ -5,22 +5,22 @@ import java.util.Set;
 
 public class Player {
 
-    private Set<Field> visitedFields = new HashSet<>();
+    private final Set<Field> markedFields = new HashSet<>();
+    private final Set<Field> exploredFields = new HashSet<>();
 
-    public Set<Field> getVisitedFields() {
-        return visitedFields;
+    public Set<Field> getMarkedFields() {
+        return markedFields;
     }
 
-    public void setVisitedFields(Set<Field> visitedFields) {
-        this.visitedFields = visitedFields;
+    public Set<Field> getExploredFields() {
+        return exploredFields;
     }
 
-    public void updateVisitedFields(Field field) {
-        if (visitedFields.contains(field)) {
-            visitedFields.remove(field);
+    public void updateMarkedFields(Field field) {
+        if (markedFields.contains(field)) {
+            markedFields.remove(field);
         } else {
-            visitedFields.add(field);
+            markedFields.add(field);
         }
     }
-
 }
